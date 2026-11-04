@@ -1,133 +1,126 @@
-# FMMR: Few-view Multi-person Mesh Reconstruction
+# FMMR: Feed-Forward Multi-view Multi-person Reconstruction with Contrastive Human-Aware 3D Representation
 
-The official code for **FMMR** — reconstructing multiple SMPL bodies from uncalibrated multi-view RGB images.
+Multi-person SMPL mesh reconstruction from uncalibrated multi-view RGB images.
 
-Authors: <!-- TODO: author list -->
+Yuanwang Yang, Buzhen Huang, Zongxuan Ren, Jing Huang, Kun Li
 
-[\[Project\]](#) | [\[Paper\]](#)
+*International Journal of Computer Vision*, 134, Article 414, 2026.
 
-![figure](assets/Pipeline.png)
+[Paper](https://doi.org/10.1007/s11263-026-03000-0)
 
-*Overview of FMMR. (a) Human-aware unified 3D feature space initialization from sparse uncalibrated multi-view RGB. (b) Spatial contrastive learning across 3D and multi-view 2D cues. (c) 3D-aware human pose and shape reasoning with an SMPL regressor.*
+<!-- Add project page and checkpoint download URL before publication. -->
+
+![FMMR pipeline](assets/Pipeline.png)
 
 ## Installation
 
-Create a conda environment and install dependencies for FMMR.
+Requires an NVIDIA GPU with CUDA and bfloat16 support. Run from the repository root:
 
 ```bash
 conda create -n fmmr python=3.10
 conda activate fmmr
-
-pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
-pip install -r requirements-demo.txt
-
-# CUDA extensions (gsplat / torch-scatter / pytorch3d); depends on your CUDA toolchain
-bash scripts/install_cuda_deps.sh
-
-pip install -e . --no-deps
-pip install -r third_party/dinov3/requirements.txt
-pip install -e third_party/dinov3 --no-deps
+pip install -r requirements.txt
+export PYTHONPATH="$PWD/third_party/dinov3:$PYTHONPATH"
 ```
 
-Inference requires an NVIDIA GPU with CUDA and bfloat16 support. More install details are in [README.detailed.md](README.detailed.md).
+On Windows PowerShell, replace the last command with:
+
+```powershell
+$env:PYTHONPATH = "$(Get-Location)/third_party/dinov3;$env:PYTHONPATH"
+```
 
 ## Getting Started
 
-**Step1:**  
-Download the official SMPL model from the [SMPL](https://smpl.is.tue.mpg.de/) / SMPLify website and put the files under `ckpt/smpl/models/`:
+### 1. Prepare model files
 
-```text
-ckpt/smpl/models/
-  SMPL_NEUTRAL.pkl
-  SMPL_MALE.pkl
-  SMPL_FEMALE.pkl
-```
-
-**Step2:**  
-Download trained models <!-- TODO: add download URL --> and put them in `ckpt`. You also need DINOv3 and ROMP weights. The directory should look like:
+Obtain the body models from the [SMPL website](https://smpl.is.tue.mpg.de/) under its applicable terms. Prepare the following files:
 
 ```text
 ckpt/
-  fmmr_pipeline.pth
-  dinov3/dinov3_vits16_pretrain_lvd1689m-08c60483.pth
-  romp/ROMP.pkl
-  romp/SMPL_NEUTRAL.pth
-  smpl/models/ ...
+├── fmmr_pipeline.pth
+├── dinov3/
+│   └── dinov3_vits16_pretrain_lvd1689m-08c60483.pth
+├── romp/
+│   ├── ROMP.pkl
+│   └── SMPL_NEUTRAL.pth
+└── smpl/
+    └── models/
+        ├── SMPL_NEUTRAL.pkl
+        ├── SMPL_MALE.pkl
+        └── SMPL_FEMALE.pkl
 ```
 
-`fmmr_pipeline.pth` merges Human Recognition, Semantic Embedding, and the multi-person SMPL Decoder (including the VGGT backbone).
+Obtain the FMMR checkpoint from the maintainers and the DINOv3 / ROMP weights from their respective projects.
 
-**Step3:**  
-Organize multi-view images of the same scene at the same time (JPG/PNG; at least 2 views, up to 6 used by default):
+### 2. Prepare multi-view images
+
+Place images of the same scene at the same time directly inside one directory:
 
 ```text
 input/0000/
-  cam01.jpg
-  cam02.jpg
-  cam03.jpg
+├── cam01.jpg
+├── cam02.jpg
+└── cam03.jpg
 ```
 
-Run demo:
+Use at least two views of the same scene; up to six views are selected by default.
+
+### 3. Run inference
 
 ```bash
 python test.py --inputs ./input/0000 --output-dir ./output/0000 --device cuda:0
 ```
 
-Results include the background point cloud, per-person and combined SMPL meshes, SMPL parameters, predicted cameras, and mesh reprojection overlays. Keep `smpl_all_world.obj` together with `smpl_all_world.mtl` to display person colors.
-
-```bash
-python test.py --help
-```
-
-You can also load the pipeline in Python:
-
-```python
-from lib.network.fmmr import FMMRPipeline
-
-pipeline = FMMRPipeline.from_pretrained("ckpt/fmmr_pipeline.pth", device="cuda:0")
-```
+Other options use the defaults in `test.py`.
 
 ## Visualization
 
-![figure](assets/demo_scene_group02.png)
+### Reconstructed scene
 
-*3D scene reconstruction (Gaussian / point cloud + SMPL) from `output/test_output_old/group02`.*
+![Background scene and reconstructed SMPL bodies](assets/demo_scene_group02.png)
 
-<p float="left">
-  <img src="assets/demo_reprojections/view_00_cam0_cam01_00381_overlay.png" width="32%" />
-  <img src="assets/demo_reprojections/view_01_cam1_cam02_00381_overlay.png" width="32%" />
-  <img src="assets/demo_reprojections/view_02_cam2_cam03_00381_overlay.png" width="32%" />
+### Multi-view mesh reprojections
+
+<p>
+  <img src="assets/demo_reprojections/view_00_cam0_cam01_00381_overlay.png" width="32%" alt="SMPL reprojection in view 1" />
+  <img src="assets/demo_reprojections/view_01_cam1_cam02_00381_overlay.png" width="32%" alt="SMPL reprojection in view 2" />
+  <img src="assets/demo_reprojections/view_02_cam2_cam03_00381_overlay.png" width="32%" alt="SMPL reprojection in view 3" />
 </p>
-<p float="left">
-  <img src="assets/demo_reprojections/view_03_cam3_cam05_00381_overlay.png" width="32%" />
-  <img src="assets/demo_reprojections/view_04_cam4_cam06_00381_overlay.png" width="32%" />
-  <img src="assets/demo_reprojections/view_05_cam5_cam08_00381_overlay.png" width="32%" />
+<p>
+  <img src="assets/demo_reprojections/view_03_cam3_cam05_00381_overlay.png" width="32%" alt="SMPL reprojection in view 4" />
+  <img src="assets/demo_reprojections/view_04_cam4_cam06_00381_overlay.png" width="32%" alt="SMPL reprojection in view 5" />
+  <img src="assets/demo_reprojections/view_05_cam5_cam08_00381_overlay.png" width="32%" alt="SMPL reprojection in view 6" />
 </p>
 
 ## Citation
 
-If you find this work useful, please consider citing:
+If you find this work useful, please cite:
+
+Yuanwang Yang, Buzhen Huang, Zongxuan Ren, Jing Huang, Kun Li. "Feed-Forward Multi-view Multi-person Reconstruction with Contrastive Human-Aware 3D Representation". *International Journal of Computer Vision*, 134, Article 414, 2026. [DOI: 10.1007/s11263-026-03000-0](https://doi.org/10.1007/s11263-026-03000-0).
 
 ```bibtex
-@misc{FMMR,
-  author = {},
-  title = {FMMR: Few-view Multi-person Mesh Reconstruction},
-  year = {},
-  url = {}
+@article{yang2026feedforward,
+  author = {Yuanwang Yang and Buzhen Huang and Zongxuan Ren and Jing Huang and Kun Li},
+  title = {Feed-Forward Multi-view Multi-person Reconstruction with Contrastive Human-Aware {3D} Representation},
+  journal = {International Journal of Computer Vision},
+  volume = {134},
+  eid = {414},
+  year = {2026},
+  doi = {10.1007/s11263-026-03000-0}
 }
 ```
 
 ## Acknowledgments
 
-Some of the code are based on the following works. We gratefully appreciate the impact it has on our work.
+FMMR uses code or models from the following projects. We thank their authors for making these resources available.
 
-[VGGT](https://github.com/facebookresearch/vggt)  
-[DINOv3](https://github.com/facebookresearch/dinov3)  
-[ROMP](https://github.com/Arthur151/ROMP)  
-[SMPL](https://smpl.is.tue.mpg.de/)
+- [VGGT](https://github.com/facebookresearch/vggt)
+- [DINOv3](https://github.com/facebookresearch/dinov3)
+- [ROMP](https://github.com/Arthur151/ROMP)
+- [SMPL](https://smpl.is.tue.mpg.de/)
 
 ## License
 
-VGGT and DINOv3 retain their respective licenses; see [LICENSE.txt](LICENSE.txt) and [third_party/dinov3/LICENSE.md](third_party/dinov3/LICENSE.md). Model assets and datasets follow their own terms.
+The original FMMR code is released under the [MIT License](LICENSE).
 
-<!-- TODO: Specify the license for the original FMMR code. -->
+Third-party code and assets retain their respective licenses. See [LICENSE.txt](LICENSE.txt) for VGGT and [third_party/dinov3/LICENSE.md](third_party/dinov3/LICENSE.md) for DINOv3. External model weights, SMPL assets and datasets remain subject to their respective terms.

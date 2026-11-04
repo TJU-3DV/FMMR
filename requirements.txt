@@ -1,0 +1,15 @@
+# Inference dependencies; versions are not locked to a validated environment.
+# PyTorch and CUDA extensions must match the local CUDA toolchain.
+torch
+torchvision
+numpy
+Pillow
+opencv-python
+einops
+scikit-learn
+smplx
+huggingface-hub
+gsplat
+torch-scatter
+simple-romp
+pytorch3d @ git+https://github.com/facebookresearch/pytorch3d.git
