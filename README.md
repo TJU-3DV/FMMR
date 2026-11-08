@@ -6,7 +6,7 @@ Multi-person SMPL mesh reconstruction from uncalibrated multi-view RGB images.
 
 *International Journal of Computer Vision*, 134, Article 414, 2026.
 
-[Paper](https://doi.org/10.1007/s11263-026-03000-0)
+[\[Project\]](https://cic.tju.edu.cn/faculty/likun/projects/FMMR/index.html) [\[Paper\]](https://doi.org/10.1007/s11263-026-03000-0)
 
 <!-- Add project page and checkpoint download URL before publication. -->
 
