@@ -2,7 +2,7 @@
 
 Multi-person SMPL mesh reconstruction from uncalibrated multi-view RGB images.
 
-[Yuanwang Yang](https://yywqwq.github.io/), [Buzhen Huang](https://www.buzhenhuang.com/), Zongxuan Ren, [Jing Huang](https://jinghuang.site/), [Kun Li](https://cic.tju.edu.cn/faculty/likun/index.html)
+[Yuanwang Yang*](https://yywqwq.github.io/), [Buzhen Huang*](https://www.buzhenhuang.com/), Zongxuan Ren, [Jing Huang](https://jinghuang.site/), [Kun Li<sup>#</sup>](https://cic.tju.edu.cn/faculty/likun/index.html)
 
 *International Journal of Computer Vision*, 134, Article 414, 2026.
 
